@@ -37,7 +37,7 @@ vgcreate ${VGNAME} /dev/mapper/${CRYPTDEVNAME}
 lvcreate -L $VGNAME_VAR_SIZE"G" -n swap ${VGNAME}
 lvcreate -L $VGNAME_VAR_SIZE"G" -n var ${VGNAME}
 lvcreate -L $VGNAME_HOME_SIZE"G" -n home ${VGNAME}
-lvcreate -L 7G -n root ${VGNAME}
+lvcreate -L 5G -n root ${VGNAME}
 
 mkfs.ext4 -L boot /dev/sda1
 mkfs.ext4 -L root /dev/mapper/${VGNAME}-root
