@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 PKG_LIST="lvm2 cryptsetup grub efibootmgr nano firefox geany"
@@ -28,7 +28,7 @@ parted -a optimal /dev/sda mkpart primary 1100M 100%
 parted /dev/sda set 1 boot on
 
 cryptsetup luksFormat -c aes-xts-plain64 -s 512 /dev/sda2
-cryptsetup luksOpen /dev/sda3 ${CRYPTDEVNAME}
+cryptsetup luksOpen /dev/sda2 ${CRYPTDEVNAME}
 
 pvcreate /dev/mapper/${CRYPTDEVNAME}
 vgcreate ${VGNAME} /dev/mapper/${CRYPTDEVNAME}
@@ -37,7 +37,7 @@ vgcreate ${VGNAME} /dev/mapper/${CRYPTDEVNAME}
 lvcreate -L $VGNAME_VAR_SIZE"G" -n swap ${VGNAME}
 lvcreate -L $VGNAME_VAR_SIZE"G" -n var ${VGNAME}
 lvcreate -L $VGNAME_HOME_SIZE"G" -n home ${VGNAME}
-lvcreate -L `expr $disk_size - $VGNAME_SWAP_SIZE - $VGNAME_VAR_SIZE - $VGNAME_HOME_SIZE - 2`"G" -n root ${VGNAME}
+lvcreate -L 7G -n root ${VGNAME}
 
 mkfs.ext4 -L boot /dev/sda1
 mkfs.ext4 -L root /dev/mapper/${VGNAME}-root
