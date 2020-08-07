@@ -10,9 +10,9 @@ CRYPTDEVNAME="pool-party"
 VGNAME="sars_pool"
 
 #set static sizes for lvm's to be calculated and used
-VGNAME_SWAP_SIZE=1
-VGNAME_VAR_SIZE=5
-VGNAME_HOME_SIZE=5
+VGNAME_SWAP_SIZE=8
+VGNAME_VAR_SIZE=20
+VGNAME_HOME_SIZE=200
 
 #getting information for size calculations
 raw_disk_size=$(lsblk -m --output SIZE -n -d /dev/sda)
@@ -34,10 +34,10 @@ pvcreate /dev/mapper/${CRYPTDEVNAME}
 vgcreate ${VGNAME} /dev/mapper/${CRYPTDEVNAME}
 
 #create individual logical lovumes
-lvcreate -L $VGNAME_VAR_SIZE"G" -n swap ${VGNAME}
+lvcreate -L $VGNAME_SWAP_SIZE"G" -n swap ${VGNAME}
 lvcreate -L $VGNAME_VAR_SIZE"G" -n var ${VGNAME}
 lvcreate -L $VGNAME_HOME_SIZE"G" -n home ${VGNAME}
-lvcreate -L 5G -n root ${VGNAME}
+lvcreate -L `expr $disk_size - $VGNAME_SWAP_SIZE - $VGNAME_VAR_SIZE - $VGNAME_HOME_SIZE - 20`"G" -n root ${VGNAME}
 
 mkfs.ext4 -L boot /dev/sda1
 mkfs.ext4 -L root /dev/mapper/${VGNAME}-root
@@ -45,11 +45,17 @@ mkswap /dev/mapper/${VGNAME}-swap
 mkfs.ext4 -L var /dev/mapper/${VGNAME}-var
 mkfs.ext4 -L home /dev/mapper/${VGNAME}-home
 
+
+
 mount /dev/mapper/${VGNAME}-root /mnt
+for dir in boot home var; do
+  mkdir /mnt/${dir}
+done
+
+
 mount /dev/mapper/${VGNAME}-home /mnt/home
 mount /dev/mapper/${VGNAME}-var /mnt/var
 swapon /dev/mapper/${VGNAME}-swap
-
 mount /dev/sda1 /mnt/boot
 
 basestrap /mnt base base-devel runit elogind-runit linux linux-firmware
